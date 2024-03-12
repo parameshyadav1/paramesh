@@ -157,6 +157,3 @@ JOIN five_hundredth_transaction h ON f.City = h.City
 ORDER BY Days_to_500th_Transaction ASC 
 LIMIT 1; -- picks the least day
 
--- once you are done with this create a github repo to put that link in your resume. Some example github links:
--- https://github.com/ptyadana/SQL-Data-Analysis-and-Visualization-Projects/tree/master/Advanced%20SQL%20for%20Application%20Development
--- https://github.com/AlexTheAnalyst/PortfolioProjects/blob/main/COVID%20Portfolio%20Project%20-%20Data%20Exploration.sql

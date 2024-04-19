@@ -1,0 +1,699 @@
+import java.math.BigDecimal;
+import java.sql.Date;
+
+public class accountMaster{
+
+    private int accno;
+
+    private String name;
+
+    private String address;
+
+    private Date date;
+
+    private String pan;
+
+    private String phone;
+
+    private String email;
+
+    private BigDecimal balance;
+
+    public accountMaster(){
+
+    }
+    public void setAccno(int accno){
+
+        this.accno=accno;
+    }
+    public int getAccno(){
+
+        return this.accno;
+    }
+
+    public void setName(String name){
+
+        this.name=name;
+    }
+    public String getName(){
+
+        return this.name;
+    }
+
+    public void setAddress(String address){
+
+        this.address=address;
+    }
+    public String getAddress(){
+
+        return this.address;
+    }
+
+    public void setDate(Date date){
+
+        this.date=date;
+    }
+    public Date getDate(){
+
+        return this.date;
+    }
+
+    public void setPan(String pan){
+
+        this.pan=pan;
+    }
+    public String getPan(){
+
+        return this.pan;
+    }
+
+    public void setPhone(String phone){
+
+        this.phone=phone;
+    }
+    public String getPhone(){
+
+        return this.phone;
+    }
+
+    public void setEmail(String email){
+
+        this.email=email;
+    }
+    public String getEmail(){
+
+        return this.email;
+    }
+
+    public void setBalance(BigDecimal balance){
+
+        this.balance=balance;
+    }
+    public BigDecimal getBalance(){
+
+        return this.balance;
+    }
+}
+
+import java.math.BigDecimal;
+import java.sql.*;
+class BankBusinessService {
+    AccountMasterDAO accountMasterDAO;
+    TransactionDAO transactionDAO;
+    AccountValidationAndDetails accountValidationAndDetails;
+
+    public BankBusinessService(){
+        accountMasterDAO=new AccountMasterDAO();
+        transactionDAO=new TransactionDAO();
+        accountValidationAndDetails=new AccountValidationAndDetails();
+    }
+    public double checkBalance(int accNo) {
+        Connection connection=null;
+        double balance=0;
+        try {
+
+            //getting connection
+             connection = getConnection.getconnection();
+
+             //getting balance from accountMasterDAO
+            accountMaster account = accountMasterDAO.retrieve(accNo, connection);
+            balance=account.getBalance().doubleValue();
+            //closing the connection
+             connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return balance;
+    }
+    public void deposit(int accNo , double amount){
+        Connection connection=null;
+        try {
+            //getting connection
+            connection=getConnection.getconnection();
+
+            //setting autocommit- false
+            connection.setAutoCommit(false);
+
+
+            //get current Balance
+            accountMaster a=accountMasterDAO.retrieve(accNo,connection);
+            double currentBalance=a.getBalance().doubleValue();
+            //calculate new Balance
+            double newBalance=currentBalance+amount;
+
+            //inserting data in Transaction table
+            Date date= new Date(new java.util.Date().getTime());
+            String type="Deposit";
+            transaction transaction=new transaction();
+            transaction.setAccno(accNo);
+            transaction.setDate(date);
+            transaction.setType(type);
+            transaction.setAmount(BigDecimal.valueOf(amount));
+            //transaction.setBalance(BigDecimal.valueOf(currentBalance));
+
+            transaction.setBalance(new BigDecimal(newBalance));
+            transactionDAO.insertTransaction(transaction,connection);
+
+            accountMaster accountMaster=new accountMaster();
+            accountMaster.setAccno(a.getAccno());
+            accountMaster.setName(a.getName());
+            accountMaster.setAddress(a.getAddress());
+            accountMaster.setDate(a.getDate());
+            accountMaster.setPan(a.getPan());
+            accountMaster.setPhone(a.getPhone());
+            accountMaster.setEmail(a.getEmail());
+            //accountMaster.setBalance(a.getBalance());
+
+            //updating accountMaster Table
+            accountMaster.setBalance(BigDecimal.valueOf(newBalance));
+            accountMasterDAO.update(accountMaster,connection);
+
+            //commit connection
+            connection.commit();
+
+        } catch (Exception e) {
+            try {
+
+                //connection rollback-if any problem will occurs in transactionDAO and accountMasterDAO
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            e.printStackTrace();
+        }finally {
+            try {
+
+                //checking connection
+                if (connection != null)
+
+                    //close the connection
+                    connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+
+   public void withdraw(int accNo , double amount){
+       Connection connection=null;
+       try {
+           //getting connection
+           connection=getConnection.getconnection();
+
+           //setting autocommit- false
+           connection.setAutoCommit(false);
+
+           //get current Balance
+           accountMaster a=accountMasterDAO.retrieve(accNo,connection);
+           double currentBalance=a.getBalance().doubleValue();
+           //calculate new Balance
+           double newBalance=currentBalance-amount;
+
+           //inserting data in Transaction table
+           Date date= new Date(new java.util.Date().getTime());
+           String type="Withdraw";
+           transaction transaction=new transaction();
+           transaction.setAccno(accNo);
+           transaction.setDate(date);
+           transaction.setType(type);
+           transaction.setAmount(BigDecimal.valueOf(amount));
+           //transaction.setBalance(BigDecimal.valueOf(currentBalance));
+
+           transaction.setBalance(new BigDecimal(newBalance));
+           transactionDAO.insertTransaction(transaction,connection);
+
+           accountMaster accountMaster=new accountMaster();
+           accountMaster.setAccno(a.getAccno());
+           accountMaster.setName(a.getName());
+           accountMaster.setAddress(a.getAddress());
+           accountMaster.setDate(a.getDate());
+           accountMaster.setPan(a.getPan());
+           accountMaster.setPhone(a.getPhone());
+           accountMaster.setEmail(a.getEmail());
+           //accountMaster.setBalance(a.getBalance());
+
+           //updating accountMaster Table
+           accountMaster.setBalance(BigDecimal.valueOf(newBalance));
+           accountMasterDAO.update(accountMaster,connection);
+
+           //commit connection
+           connection.commit();
+
+       } catch (Exception e) {
+           try {
+
+               //connection rollback-if any problem will occurs in transactionDAO and accountMasterDAO
+               connection.rollback();
+           } catch (SQLException ex) {
+               throw new RuntimeException(ex);
+           }
+           e.printStackTrace();
+       }finally {
+           try {
+
+               //checking connection
+               if (connection != null)
+
+                   //close the connection
+                   connection.close();
+           } catch (SQLException e) {
+               throw new RuntimeException(e);
+           }
+       }
+    }
+
+    public void generateStatement(int accNo) {
+        try {
+            Connection connection=getConnection.getconnection();
+
+            //get MetaData amd display table column name
+            DatabaseMetaData databaseMetaData=connection.getMetaData();
+            ResultSet result = databaseMetaData.getTables(null, null, null, new String[] {"TABLE"});
+
+            if(accountNumValidation(accNo)) {
+                while (result.next()) {
+                    String tableName = result.getString("TABLE_NAME");
+
+                    if (tableName.equals("transaction")) {
+                        ResultSet resultSet = databaseMetaData.getColumns(null, null, tableName, null);
+                        while (resultSet.next()) {
+                            String col_Name = resultSet.getString("COLUMN_NAME");
+                            System.out.print(col_Name + "     ");
+                        }
+                        System.out.println();
+                    }
+                }
+
+                //getting each records for that particular account Number
+                ResultSet rs = accountValidationAndDetails.getAccountDetails(accNo, connection);
+
+                //Displaying records
+                while (rs.next()) {
+                    System.out.println(" " + rs.getInt(1) + "      " + rs.getInt(2) + "   " + rs.getDate(3) + " " + rs.getString(4) + "   " + rs.getBigDecimal(5) + "   " + rs.getBigDecimal(6));
+                }
+            }
+
+            //close connection
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public boolean accountNumValidation(int accNo){
+        try {
+            Connection connection= getConnection.getconnection();
+
+            //getting Account number and store Resultset
+            ResultSet rs=accountValidationAndDetails.getAccountDetails(accNo,connection);
+            while(rs.next())
+            {
+                if (rs.getInt("accno") == accNo) return true;
+            }
+            //close connection
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return false;
+    }
+}
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class AccountMasterDAO {
+    public accountMaster retrieve(int accNo, Connection connection){
+        double balance=0;
+        final String getBalanceQuery = "select * from Bank.accountmaster where accno=?";
+        //Getting connection
+        try {
+            accountMaster accountMaster = new accountMaster();
+            //Getting balance
+            PreparedStatement statement = connection.prepareStatement(getBalanceQuery);
+            statement.setInt(1,accNo);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()){
+                accountMaster.setAccno(resultSet.getInt(1));
+                accountMaster.setName(resultSet.getString(2));
+                accountMaster.setAddress(resultSet.getString(3));
+                accountMaster.setDate(resultSet.getDate(4));
+                accountMaster.setPan(resultSet.getString(5));
+                accountMaster.setPhone(resultSet.getString(6));
+                accountMaster.setEmail(resultSet.getString(7));
+                accountMaster.setBalance(resultSet.getBigDecimal(8));
+            }
+
+            return accountMaster;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public void update(accountMaster accountMaster, Connection connection){
+        final String updateBalanceQuery = "update Bank.accountmaster set name=?,address=?,date=?,pan=?,phone=?,email=?,balance=? where accno=?";
+
+        try {
+            //Updating balance
+            PreparedStatement statement = connection.prepareStatement(updateBalanceQuery);
+            statement.setString(1,accountMaster.getName());
+            statement.setString(2,accountMaster.getAddress());
+            statement.setDate(3,accountMaster.getDate());
+            statement.setString(4,accountMaster.getPan());
+            statement.setString(5,accountMaster.getPhone());
+            statement.setString(6,accountMaster.getEmail());
+            statement.setBigDecimal(7,accountMaster.getBalance());
+            statement.setInt(8,accountMaster.getAccno());
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class TransactionDAO {
+    public void insertTransaction(transaction transaction, Connection connection){
+
+        try {
+
+            //Inserting Transaction
+            final String insertTransactionQuery = "insert into Bank.transaction (accno,date,type,amount,balance) values (?,?,?,?,?)";
+            PreparedStatement statement = connection.prepareStatement(insertTransactionQuery);
+            statement.setInt(1,transaction.getAccno());
+            statement.setDate(2, transaction.getDate());
+            statement.setString(3,transaction.getType());
+            statement.setBigDecimal(4,transaction.getAmount());
+            statement.setBigDecimal(5,transaction.getBalance());
+            statement.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    
+}
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class AccountValidationAndDetails {
+    //account number details getting from Transaction Table
+    public ResultSet getAccountDetails(int accNo, Connection connection){
+        final String query = "select * from Bank.transaction where accNo=?";
+        try {
+            PreparedStatement ps = connection.prepareStatement(query);
+            ps.setInt(1, accNo);
+            ResultSet rs = ps.executeQuery();
+            return rs;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+
+
+import java.sql.*;
+
+public class metaData {
+    public static void main(String[] args){
+        try {
+            Connection connection=getConnection.getconnection();
+            DatabaseMetaData databaseMetaData=connection.getMetaData();
+            System.out.println("Database product name : "+databaseMetaData.getDatabaseProductName());
+            System.out.println("Database product version : "+databaseMetaData.getDatabaseProductVersion());
+            System.out.println("Database driver name : "+databaseMetaData.getDriverName());
+            System.out.println("Database driver version : "+databaseMetaData.getDriverVersion());
+            System.out.println("Database URL : "+databaseMetaData.getURL());
+            System.out.println("Database current name : "+databaseMetaData.getUserName());
+            System.out.println("============================================================== ");
+
+            //Getting List of Tables
+            ResultSet result = databaseMetaData.getTables(null, null, null, new String[] {"TABLE"});
+            while (result.next()) {
+                String tableName=result.getString("TABLE_NAME");
+                System.out.println(tableName);
+
+                //getting List of Columns resultset
+                ResultSet resultSet = databaseMetaData.getColumns(null, null, tableName, null);
+
+                //getting primary key resltset
+                ResultSet primaryKeys = databaseMetaData.getPrimaryKeys(null, null, tableName);
+
+                //getting List of column
+                while (resultSet.next()) {
+                    String col_Name = resultSet.getString("COLUMN_NAME");
+                    String col_Type = resultSet.getString("TYPE_NAME");
+                    int col_Size = resultSet.getInt("COLUMN_SIZE");
+                    System.out.println("\t" + col_Name + " - " + col_Type + "(" + col_Size + ")");
+                }
+
+                //Primary key of the table
+                while (primaryKeys.next()){
+                    String primaryKeyColumn = primaryKeys.getString("COLUMN_NAME");
+                    System.out.println("\tPrimary Key Column: " + primaryKeyColumn);
+                }
+
+            }
+
+        }catch (Exception e){
+            System.out.println("not connected");
+        }
+    }
+}
+import java.math.BigDecimal;
+import java.sql.Date;
+
+public class transaction{
+
+    private int accno;
+
+    private Date date;
+
+    private String type;
+
+    private BigDecimal amount;
+
+    private BigDecimal balance;
+
+    public void setAccno(int accno){
+
+        this.accno=accno;
+    }
+    public int getAccno(){
+
+        return this.accno;
+    }
+
+    public void setDate(Date date){
+
+        this.date=date;
+    }
+    public Date getDate(){
+
+        return this.date;
+    }
+
+    public void setType(String type){
+
+        this.type=type;
+    }
+    public String getType(){
+
+        return this.type;
+    }
+
+    public void setAmount(BigDecimal amount){
+
+        this.amount=amount;
+    }
+    public BigDecimal getAmount(){
+
+        return this.amount;
+    }
+
+    public void setBalance(BigDecimal balance){
+
+        this.balance=balance;
+    }
+    public BigDecimal getBalance(){
+
+        return this.balance;
+    }
+}
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class TransactionDAO {
+    public void insertTransaction(transaction transaction, Connection connection){
+
+        try {
+
+            //Inserting Transaction
+            final String insertTransactionQuery = "insert into Bank.transaction (accno,date,type,amount,balance) values (?,?,?,?,?)";
+            PreparedStatement statement = connection.prepareStatement(insertTransactionQuery);
+            statement.setInt(1,transaction.getAccno());
+            statement.setDate(2, transaction.getDate());
+            statement.setString(3,transaction.getType());
+            statement.setBigDecimal(4,transaction.getAmount());
+            statement.setBigDecimal(5,transaction.getBalance());
+            statement.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class getConnection {
+    public static Connection getconnection() {
+        Connection conn;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/bank", "root", "Paramesh123@");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return conn;
+    }
+}
+
+import java.util.Scanner;
+public class BankUI {
+    static int accNo;
+    static double amount;
+    static String choices = null;
+    static Scanner input= new Scanner(System.in);
+    public  BankUI() {
+            do {
+                //Displaying option
+                System.out.println("Enter your choice \n 1. Deposit \n 2. Withdraw \n 3. Balance Check \n 4. Generate Statement \n 5. Exit");
+
+                int choice = input.nextInt();
+                switch (choice) {
+                    case 1:
+                        BankBusinessService BS1=new BankBusinessService();
+                        System.out.println("Enter Account Number [Starting 1001]");
+
+                        //user Input[account  number]/usr/lib/jvm/java-8-openjdk-amd64
+
+                        accNo=input.nextInt();
+
+                        //Account Validation
+                        if(accNo>1000 && BS1.accountNumValidation(accNo)){
+                            System.out.println("Enter Amount to be deposit");
+
+                            //user Input [amount]
+                            amount=input.nextInt();
+                            if(amount>0) {
+
+                                //Deposit amount
+                                BS1.deposit(accNo,amount);
+                                System.out.println("Amount deposited RS " + amount +"\n Balance : " + BS1.checkBalance(accNo));
+                            }
+                            else {
+                                System.out.println("Invalid amount");
+                            }
+                        }
+                        else System.out.println("INVALID ACCOUNT NUMBER");
+                        System.out.print("Do You Want to continue...\npress Y/y => YES or N/n => NO  ");
+
+                        //taking input for user choice
+                        choices = input.next();
+                        break;
+                    case 2:
+                        BankBusinessService BS2=new BankBusinessService();
+                        System.out.println("Enter Account Number [Starting 1001]");
+
+                        //user Inputs [account number]
+                        accNo=input.nextInt();
+
+                        //Account Validation
+                        if (accNo>1000 && BS2.accountNumValidation(accNo)) {
+                            System.out.println("Enter Amount to be withdraw");
+
+                            //user Inputs [amount]
+                            amount = input.nextInt();
+                            if (amount < BS2.checkBalance(accNo) && amount > 0) {
+
+                                //withdraw amount
+                                BS2.withdraw(accNo,amount);
+                                System.out.println("Amount withdraw RS " + amount + "\n Balance : " + BS2.checkBalance(accNo));
+                            } else {
+                                System.out.println("Insufficient Balance");
+                            }
+                        }
+                        else System.out.println("INVALID ACCOUNT NUMBER");
+                        System.out.print("Do You Want to continue...\npress Y/y => YES or N/n => NO  ");
+
+                        //taking user input for user choice
+                        choices = input.next();
+                        break;
+                    case 3:
+                        BankBusinessService BS3=new BankBusinessService();
+                        System.out.println("Enter Account Number [Starting 1001]");
+
+                        //user inputs [Account number]
+                        accNo=input.nextInt();
+
+                        //Account Number validation
+                        if(accNo>1000 && BS3.accountNumValidation(accNo))
+
+                            //checking Balance
+                            System.out.println("Account Balance : " + BS3.checkBalance(accNo));
+                        else{System.out.println("INVALID ACCOUNT NUMBER");}
+                        System.out.print("Do You Want to continue...\npress Y/y => YES or N/n => NO  ");
+
+                        //user Inputs for choice
+                        choices = input.next();
+                        break;
+                    case 4:
+                        BankBusinessService BS4=new BankBusinessService();
+                        System.out.println("Enter Account Number [Starting 1001]");
+
+                        //User Input [Account Number]
+                        accNo=input.nextInt();
+
+                        //Account Validation
+                       if(accNo>1000 && BS4.accountNumValidation(accNo)) BS4.generateStatement(accNo);
+                       else System.out.println("INVALID ACCOUNT NUMBER");
+                        System.out.print("Do You Want to continue...\npress Y/y => YES or N/n => NO  ");
+
+                        //taking input from user for user choice
+                        choices = input.next();
+                        break;
+                    case 5:
+
+                        //Exit operation
+                        return;
+                    default:
+
+                        //Wrong choice intimation
+                        System.out.println("choose correct choice");
+                }
+            }while (choices.equals("Y")|| choices.equals("y"));
+    }
+}
+public class Bank {
+    public static void main(String[] args){
+        System.out.println("$$$ WELCOME TO KANAGARAJ BANK $$$");
+        new BankUI();
+        System.out.println("THANK YOU FOR VISITING...");
+    }
+}

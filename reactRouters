@@ -1,0 +1,474 @@
+function App(){
+ return(
+  <div>
+ 
+    <Router>
+    <ul>
+    <li class="react-app">React Developer</li>
+     <li>
+       <Link to="/a">Home</Link>
+     </li>
+     <li>
+        <Link to="b">About</Link>
+     </li>
+     <li>
+        <Link to="c">Contact</Link>
+     </li>
+     <li>
+        <Link to="d">Gallary</Link>
+     </li>
+     <li>
+        <Link to="e">Page</Link>
+     </li>
+     <li class="bu"><button>Join us</button></li>
+    </ul>
+    <Routes>
+      <Route 
+      path="/a" element={<Home></Home>}>
+      </Route>
+      <Route 
+      path="/b" element={<About></About>}>
+      </Route>
+      <Route 
+      path="/c" element={<Contact></Contact>}>
+      </Route>
+      <Route 
+      path="/d" element={<Gallary></Gallary>}>
+      </Route>
+      <Route 
+      path="/e" element={<Page></Page>}>
+      </Route>
+    </Routes>
+    </Router>
+  </div>
+ )
+}
+export default App;
+
+import { useNavigate } from "react-router-dom";
+
+function Contact(){
+    const navigative= useNavigate()
+    const Change =()=>{
+        navigative("/Home")
+    }
+    return(
+        <div>
+          <div class="d-flex">
+        <div class="sec">
+            <h2>Full Stack Developer Training & Placements</h2>
+            <hr/>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic, cum saepe in perspiciatis incidunt ipsam
+                quas, necessitatibus recusandae doloremque ipsum possimus repudiandae placeat quaerat iusto.</p>
+
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum et qui sapiente consequuntur cumque
+                voluptatem magni, itaque iusto dignissimos at perferendis nesciunt voluptatibus obcaecati hic.</p>
+            <hr/>
+            <button class="b2" onClick={Change}>Learn More</button>
+        </div>
+        <div class="f">
+            <h1 class="t">Fill & get upto 25% off in Course Fees</h1>
+            <form>
+                <label></label>
+                <input type="text" placeholder="Name"/>
+                <br/><br/>
+                <label></label>
+                <input type="tel" placeholder="10 Digit Mobile Number"/>
+                <br/><br/>
+                <label></label>
+                <input type="email" placeholder="Email"/>
+                <br/><br/>
+                <label></label>
+                <input type="text" placeholder="Message"/>
+                <br/><br/>
+                <button class="b3">I an intrested, Tell me more....</button>
+                
+            </form>
+        </div>
+    </div>
+        </div>
+    )
+}
+export default Contact;
+
+function About(){
+    return(
+        <div>
+        
+        <div class="main-a">
+            <div class="item-a">
+                <h2>Enriching and Fun Early Years <br></br>
+                    Matter Preschool Curriculum</h2>
+                    <hr></hr>
+                    <p>Our curriculum focuses on the holistic development of the child and is suitably
+                        mapped to age-appropriate objectives and outcomes. Based on Dr. Howard
+                        Gardner’s Theory of Multiple Intelligences and Experiential Learning, the
+                        KLAY curriculum empowers the child to be able to establish a routine, follow
+                        directions, make friends and work independently.
+                        </p>
+            </div>
+            <div>
+                <img class="img0" src="https://www.indiaspend.com/h-upload/2022/02/02/646292-updated-budget-2022-education-samagra-shiksha-1500.jpg" width="300px " height="300px"></img>
+            </div>
+            
+        </div>
+        <div class="main1-a">
+            <div>
+                <img class="img1" src="https://images.ncsl.org/image/upload/c_fill,g_auto,w_600/f_auto,q_auto/v1668135098/website/GettyImages-684057264-crop.jpg" width="300px" height="300px"></img>
+            </div>
+            <div class="item1-a">
+                <h2>Socio-emotional & Physical <br></br> 
+                    Development</h2>
+                    <hr></hr>
+                    <p>A multi-sensory environment that includes group activities, role plays, story time and drama that have been
+                        curated to meet the child’s social, emotional, physical and emotional milestones. We make them ‘Big School
+                        Ready’!
+                        </p>
+            </div>
+        </div>
+        <div class="main2-a">
+            <div class="item2-a">
+                <h2>Milestones Tracking and <br></br>
+                    Regular Assessments</h2>
+                    <hr></hr>
+                    <p>180 degree evaluation, milestone tracking and regular assessments every
+                        term, to let you know of your child’s progress. We also help counsel with
+                        strategies, should a child require a more focused stimulation.</p>
+            </div>
+            <div>
+                <img class="img2" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg7umSKABWvDNQJx1ToLLV8CIFqgvHNv-63A&usqp=CAU"  width="300px" height="300px"></img>
+            </div>
+        </div>
+        </div>
+    )
+}
+export default About;
+
+function Home(){
+    return(
+        <div>
+            <div class="main">
+            <div class="kids">
+                <h3>Kids Learning Center</h3>
+                <hr></hr>
+                <h1>New Approach to <br/>Kids Educations</h1>
+
+                 <p>Approaches to learning is about how children learn in different ways and focuses on the development of positive attitudes towards learning: • Curiosity, engagement and persistence; Creativity and imagination; • Diversity in learning. experiences and nurturing interactions that promote the joy of learning.A whole child approach to education is one that honors the humanity of each teacher and student, and is critical to equitably preparing each student to reach their full potential. This starts by creating environments of belonging and connection for students and adults to engage and thrive.</p>
+                 <hr/>
+                 <br/>
+                 <button class="button2">Learn more</button>
+            </div>
+            <div >
+                <img class="hm" src="https://img.freepik.com/free-photo/focused-haired-latin-girl-sitting-school-desk-drawing-her-copybook_74855-16368.jpg" width="400" />
+            </div>
+        </div>
+        </div>
+    )
+}
+export default Home;
+
+function Gallary(){
+    return(
+        <div>
+            <section >
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3zeIBnv38HHCFIE2Y1sxwunKxpHshNKulDA&usqp=CAU" />
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3zeIBnv38HHCFIE2Y1sxwunKxpHshNKulDA&usqp=CAU"/>
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6OqGuymL0bpCVOjTUVK8NPO8NCWv66xiFIg&usqp=CAU"/>
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6OqGuymL0bpCVOjTUVK8NPO8NCWv66xiFIg&usqp=CAU" />  
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6OqGuymL0bpCVOjTUVK8NPO8NCWv66xiFIg&usqp=CAU" />
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6OqGuymL0bpCVOjTUVK8NPO8NCWv66xiFIg&usqp=CAU"/>
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3zeIBnv38HHCFIE2Y1sxwunKxpHshNKulDA&usqp=CAU" />
+            </div>
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3zeIBnv38HHCFIE2Y1sxwunKxpHshNKulDA&usqp=CAU"></img>
+            </div>
+        </section>
+        <div class="hedding">
+            <h3>Get to know us better!</h3>
+        </div>
+
+        </div>
+    )
+}
+export default Gallary;
+
+
+function Page(){
+    return(
+        <div>
+            <div class="main-p">
+            <hr/>
+            <div class="main1-p">
+                <h2>Front End!</h2> 
+                <h2>Back End!</h2>
+                <h2>Data Base!</h2>
+                <h2>Career Path!</h2>
+            </div>
+            <hr/>
+            <h1 class="h1-p">Benefits of Working at KLAY</h1>
+            <hr/>
+            <h3 class="para-p"><p>At KLAY, We believe, Happy Employees = Happy Children = Happy Customers! <br/>
+                Therefore, we provide benefits beyond the basic necessities like medical insurance & flexibility that support a balanced <br/>
+                life.</p> </h3> 
+            <hr/>
+            <div class="main2-p">
+            <h4>Staff Child Care </h4>
+            <h4>Medical Insurance/ESI</h4>
+            <h4>Provident Fund </h4>
+            <h4>Bonus Attendance</h4>
+            </div>
+            <hr/>
+            <p class="para1-p">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Distinctio, voluptatibus aperiam facere obcaecati eos totam error laborum doloremque. Provident eligendi nostrum eum voluptas soluta ex! Id magnam illo consequuntur exercitationem esse corporis labore? Adipisci nesciunt harum minima, sint sed placeat quo fugiat quisquam voluptate illo. Dignissimos, expedita. Reiciendis dolorum ullam culpa, reprehenderit itaque assumenda autem accusantium vitae eum accusamus repellendus? Ab dignissimos ipsam placeat non hic laboriosam repellat vero, dolore inventore, cumque similique consequuntur. Obcaecati asperiores quis aliquam, laborum deserunt itaque est velit non ducimus sequi dolorem voluptatibus esse architecto repellat assumenda. Aliquid reiciendis labore culpa nesciunt dolores perspiciatis provident.</p>
+            
+        </div>
+
+        </div>
+    )
+}
+export default Page;
+
+ul{
+  background-color: aqua;
+  padding: 30px;
+  
+}
+ul li{
+  display: inline;
+  padding-left: 100px;
+  cursor: pointer;
+  
+}
+.react-app{
+  padding-right: 200px;
+  color: black;
+ 
+
+}
+.bu{
+  background-color: aqua;
+  border-radius: 10px;
+}
+
+
+/* about............................................................................ */
+.main-a{
+  display: flex;
+  padding: 50px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.item-a{
+margin-right: 200px;
+}
+.img0{
+  margin-right: 200px;
+  border-radius: 50%;
+}
+
+.main1-a{
+  display: flex;
+  padding: 50px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
+}
+.img1{
+  margin-left: 100px;
+  border-radius: 50%;
+}
+.item1-a{
+  margin-left: 100px;
+}
+.main2-a{
+  display: flex;
+  padding: 50px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.item2-a{
+margin-right: 200px;
+}
+.img2{
+  margin-right: 200px;
+  border-radius: 50%;
+}
+
+
+/* home 0000.............................................*/
+.main{
+  display: grid;
+  grid-template-columns: 60% 40%;
+  background-color: aqua;
+
+}
+.kids{
+  padding-left: 30px;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.button2{
+  background-color: navy;
+  color: white;
+  border-radius: 10px;
+}
+.hm{
+  border-radius: 80%;
+  padding: 50px;
+  
+}
+
+/* Contact..................................................................... */
+item {
+  list-style: none;
+}
+
+
+
+.item {
+  background-color: lightcyan;
+  padding: 30px;
+}
+
+.b {
+  background-color: blue;
+  border-radius: 8px;
+}
+
+.a {
+  padding-right: 20px;
+  margin: 25px;
+  color: aqua;
+}
+
+.sec {
+ 
+  width: 70%;
+  padding: 2rem;
+}
+
+.b2 {
+  background-color: darkblue;
+  color: white;
+  border-radius: 8px;
+}
+
+.f {
+  background-color: lightgreen;
+  
+  text-align: center;
+  border-radius: 30px;
+  /* float: right; */
+  width: 30%;
+  padding: 2rem;
+  border: 2px solid black;
+}
+
+.t {
+  color: black;
+  padding: 10px;
+}
+
+.b3 {
+  background-color: darkblue;
+  color: white;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.d-flex {
+  background-color: greenyellow;
+  display: flex;
+  padding: 2rem;
+}
+
+::placeholder {
+  text-align: center;
+}
+
+.main {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  background-color: lightcyan;
+}
+
+.developer {
+  color: aqua;
+  word-spacing: 10px;
+}
+
+@media only screen and (max-width: 1074px) {
+
+ 
+}
+
+/* ....page..................................................... */
+.main-p{
+  background-color: aqua;
+  padding-left: 200px;
+  padding-right: 200px;
+  padding-bottom: 50px;
+  margin-left: 30px;
+  margin-right: 30px;
+  
+  
+}
+.main1-p{
+   display: flex;
+   color: blue;
+   padding: 20px;
+   justify-content: space-between;
+   padding-left: 200px;
+   padding-right: 200px;
+   
+
+   
+}
+.h1-p{
+   text-align: center;
+   color: darkcyan;
+   background-color: aqua;
+}
+.para-p{
+   text-align: center;
+}
+.main2-p{
+   display: flex;
+   justify-content: space-between;
+   padding-left: 200px;
+   padding-right: 200px;
+}
+.para1-p{
+   padding-left: 30px;
+   padding-right: 30px;
+
+}
+
+/* .....gallary................................... */
+
+
+section{
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-gap: 20px;
+    grid-row: 10px;
+}
+.hedding{
+    background-color: blue;
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    padding: 20px;
+    color: white;
+}
+

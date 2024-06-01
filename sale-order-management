@@ -1,0 +1,290 @@
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Box, Heading, List, ListItem } from '@chakra-ui/react';
+import SaleOrderModal from '../components/SaleOrderModal';
+
+ export const fetchActiveOrders = async () => {
+  // Mock API call
+  return [
+    { orderId: '001', invoiceDate: '2024-01-01' },
+    { orderId: '002', invoiceDate: '2024-02-01' },
+  ];
+};
+
+const ActiveOrders = () => {
+  const { data: orders, refetch } = useQuery(['activeOrders'], fetchActiveOrders);
+
+  const addSaleOrder = (order) => {
+    orders.push(order);
+    refetch();
+  };
+
+  return (
+    <Box p={4}>
+      <Heading mb={4}>Active Sale Orders</Heading>
+      <SaleOrderModal addSaleOrder={addSaleOrder} />
+      <List spacing={3} mt={4}>
+        {orders && orders.map((order, index) => (
+          <ListItem key={index}>
+            Order ID: {order.orderId}, Invoice Date: {order.invoiceDate}
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+};
+
+export default ActiveOrders;
+
+
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Box, Heading, List, ListItem } from '@chakra-ui/react';
+
+const fetchCompletedOrders = async () => {
+  // Mock API call
+  return [
+    { orderId: '003', invoiceDate: '2023-12-01' },
+    { orderId: '004', invoiceDate: '2023-11-01' },
+  ];
+};
+
+const CompletedOrders = () => {
+  const { data: orders } = useQuery(['completedOrders'], fetchCompletedOrders);
+
+  return (
+    <Box p={4}>
+      <Heading mb={4}>Completed Sale Orders</Heading>
+      <List spacing={3}>
+        {orders && orders.map((order, index) => (
+          <ListItem key={index}>
+            Order ID: {order.orderId}, Invoice Date: {order.invoiceDate}
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+};
+
+export default CompletedOrders;
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { Box, Button, Input, FormControl, FormLabel, FormErrorMessage } from '@chakra-ui/react';
+
+const Login = ({ setIsAuthenticated }) => {
+  const { handleSubmit, register, formState: { errors } } = useForm();
+
+  const onSubmit = values => {
+    if (values.username === 'admin' && values.password === 'password') {
+      setIsAuthenticated(true);
+    }
+  };
+
+  return (
+    <Box maxW="md" mx="auto" mt={10}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormControl isInvalid={errors.username}>
+          <FormLabel>Username</FormLabel>
+          <Input
+            type="text"
+            {...register('username', { required: 'Username is required' })}
+          />
+          <FormErrorMessage>{errors.username && errors.username.message}</FormErrorMessage>
+        </FormControl>
+
+        <FormControl mt={4} isInvalid={errors.password}>
+          <FormLabel>Password</FormLabel>
+          <Input
+            type="password"
+            {...register('password', { required: 'Password is required' })}
+          />
+          <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
+        </FormControl>
+
+        <Button mt={4} colorScheme="teal" type="submit">Login</Button>
+      </form>
+    </Box>
+  );
+};
+
+export default Login;
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Flex, Box, Switch } from '@chakra-ui/react';
+
+const Navbar = ({ toggleColorMode, colorMode }) => {
+  return (
+    <Flex as="nav" bg="teal.500" color="white" p={4}>
+      <Box mr={4}>
+        <Link to="/">Home</Link>
+      </Box>
+      <Box mr={4}>
+        <Link to="/active-orders">Active Orders</Link>
+      </Box>
+      <Box mr={4}>
+        <Link to="/completed-orders">Completed Orders</Link>
+      </Box>
+      <Switch isChecked={colorMode === 'dark'} onChange={toggleColorMode} />
+    </Flex>
+  );
+};
+
+export default Navbar;
+
+
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Input,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/hooks';
+import { DatePicker } from 'chakra-ui-date-input';
+
+const SaleOrderModal = ({ addSaleOrder, editSaleOrder, order = {}, isReadOnly = false }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { handleSubmit, register, formState: { errors }, setValue } = useForm();
+
+  useEffect(() => {
+    if (order) {
+      setValue('orderId', order.orderId);
+      setValue('invoiceDate', order.invoiceDate);
+    }
+  }, [order, setValue]);
+
+  const onSubmit = values => {
+    if (editSaleOrder) {
+      editSaleOrder({ ...order, ...values });
+    } else {
+      addSaleOrder(values);
+    }
+    onClose();
+  };
+
+  return (
+    <>
+      <Button onClick={onOpen} colorScheme="teal">{editSaleOrder ? 'Edit' : '+ Sale Order'}</Button>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{editSaleOrder ? 'Edit Sale Order' : 'Create Sale Order'}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <form id="sale-order-form" onSubmit={handleSubmit(onSubmit)}>
+              <FormControl isInvalid={errors.orderId}>
+                <FormLabel>Order ID</FormLabel>
+                <Input
+                  type="text"
+                  {...register('orderId', { required: 'Order ID is required' })}
+                  isReadOnly={isReadOnly}
+                />
+                <FormErrorMessage>{errors.orderId && errors.orderId.message}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl mt={4} isInvalid={errors.invoiceDate}>
+                <FormLabel>Invoice Date</FormLabel>
+                <DatePicker
+                  name="invoiceDate"
+                  onChange={date => setValue('invoiceDate', date)}
+                  isDisabled={isReadOnly}
+                />
+                <FormErrorMessage>{errors.invoiceDate && errors.invoiceDate.message}</FormErrorMessage>
+              </FormControl>
+            </form>
+          </ModalBody>
+          <ModalFooter>
+            {!isReadOnly && (
+              <Button colorScheme="teal" type="submit" form="sale-order-form">
+                {editSaleOrder ? 'Update' : 'Create'}
+              </Button>
+            )}
+            <Button ml={3} onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};
+
+export default SaleOrderModal;
+import React from 'react';
+import { Box, Heading } from '@chakra-ui/react';
+
+const Home = () => {
+  return (
+    <Box p={4}>
+      <Heading>Welcome to Sale Order Management</Heading>
+    </Box>
+  );
+};
+
+export default Home;
+
+
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useColorMode } from '@chakra-ui/react';
+import Navbar from './components/Navbar';
+import Login from './components/Login';
+import Home from './pages/Home';
+import ActiveOrders from './pages/ActiveOrders';
+import CompletedOrders from './pages/CompletedOrders';
+
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  return (
+    <Router>
+      {isAuthenticated ? (
+        <>
+          <Navbar toggleColorMode={toggleColorMode} colorMode={colorMode} />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/active-orders" element={<ActiveOrders />} />
+            <Route path="/completed-orders" element={<CompletedOrders />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </>
+      ) : (
+        <Routes>
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      )}
+    </Router>
+  );
+};
+
+export default App;
+
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ChakraProvider, extendTheme, ColorModeScript } from '@chakra-ui/react';
+import App from './App';
+import theme from './theme';
+
+const container = document.getElementById('root');
+
+ReactDOM.render(
+  <ChakraProvider theme={theme}>
+    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+    <App/>
+  </ChakraProvider>,
+  container
+);
+
+

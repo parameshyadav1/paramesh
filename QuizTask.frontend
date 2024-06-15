@@ -1,0 +1,536 @@
+1.src/comonents
+
+/src/comonentsAdminPanel.js.....................................................
+
+import React, { useState } from 'react';
+
+const AdminPanel = ({ addQuiz }) => {
+  const [quiz, setQuiz] = useState({
+    title: '',
+    questions: [{ question: '', options: ['', '', '', ''], correctAnswer: '' }]
+  });
+
+  const handleChange = (e, index, optionIndex) => {
+    const { name, value } = e.target;
+    const newQuestions = [...quiz.questions];
+
+    if (name === 'question') {
+      newQuestions[index][name] = value;
+    } else {
+      newQuestions[index].options[optionIndex] = value;
+    }
+
+    setQuiz({ ...quiz, questions: newQuestions });
+  };
+
+  const addQuestion = () => {
+    setQuiz({
+      ...quiz,
+      questions: [...quiz.questions, { question: '', options: ['', '', '', ''], correctAnswer: '' }]
+    });
+  };
+
+  const handleQuizSubmit = (e) => {
+    e.preventDefault();
+    addQuiz(quiz);
+    setQuiz({ title: '', questions: [{ question: '', options: ['', '', '', ''], correctAnswer: '' }] });
+  };
+
+  return (
+    <div className="admin-panel">
+      <h2>Create a Quiz</h2>
+      <form onSubmit={handleQuizSubmit}>
+        <input
+          type="text"
+          placeholder="Quiz Title"
+          value={quiz.title}
+          onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
+          required
+        />
+        {quiz.questions.map((q, index) => (
+          <div key={index}>
+            <input
+              type="text"
+              placeholder="Question"
+              name="question"
+              value={q.question}
+              onChange={(e) => handleChange(e, index)}
+              required
+            />
+            {q.options.map((option, optionIndex) => (
+              <input
+                key={optionIndex}
+                type="text"
+                placeholder={`Option ${optionIndex + 1}`}
+                value={option}
+                onChange={(e) => handleChange(e, index, optionIndex)}
+                required
+              />
+            ))}
+            <input
+              type="text"
+              placeholder="Correct Answer"
+              value={q.correctAnswer}
+              onChange={(e) => {
+                const newQuestions = [...quiz.questions];
+                newQuestions[index].correctAnswer = e.target.value;
+                setQuiz({ ...quiz, questions: newQuestions });
+              }}
+              required
+            />
+          </div>
+        ))}
+        <button type="button" onClick={addQuestion}>Add Question</button>
+        <button type="submit">Create Quiz</button>
+      </form>
+    </div>
+  );
+};
+
+export default AdminPanel;
+
+
+
+/src/comonents/Quiz.js.....................................................
+
+import React, { useState, useEffect } from 'react';
+
+import Result from './Result.js';
+
+const Quiz = ({ quiz, saveProgress, loadProgress, submitQuiz }) => {
+  const [userAnswers, setUserAnswers] = useState({});
+  const [score, setScore] = useState(null);
+
+  useEffect(() => {
+    const savedAnswers = loadProgress(quiz.title);
+    if (savedAnswers) {
+      setUserAnswers(savedAnswers);
+    }
+  }, [quiz.title, loadProgress]);
+
+  const handleChange = (e, questionIndex) => {
+    const newUserAnswers = { ...userAnswers, [questionIndex]: e.target.value };
+    setUserAnswers(newUserAnswers);
+    saveProgress(quiz.title, newUserAnswers);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    let score = 0;
+    quiz.questions.forEach((question, index) => {
+      if (userAnswers[index] === question.correctAnswer) {
+        score++;
+      }
+    });
+    setScore(score);
+    submitQuiz(score, quiz.questions);
+  };
+
+  if (score !== null) {
+    return <Result score={score} questions={quiz.questions} userAnswers={userAnswers} />;
+  }
+
+  return (
+    <div>
+      <h2>{quiz.title}</h2>
+      <form onSubmit={handleSubmit}>
+        {quiz.questions.map((question, index) => (
+          <div key={index}>
+            <p>{question.question}</p>
+            {question.options.map((option, optionIndex) => (
+              <label key={optionIndex}>
+                <input
+                  type="radio"
+                  name={index}
+                  value={option}
+                  checked={userAnswers[index] === option}
+                  onChange={(e) => handleChange(e, index)}
+                  required
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+        ))}
+        <button type="submit">Submit Quiz</button>
+      </form>
+      
+    </div>
+  );
+};
+
+export default Quiz;
+
+
+
+/src/comonents/Result.js.....................................................
+
+import React from 'react';
+
+const Result = ({ score, questions, userAnswers }) => {
+  return (
+    <div>
+      <h2>Your Score: {score}/{questions.length}</h2>
+      <h3>Review Answers:</h3>
+      {questions.map((question, index) => (
+        <div key={index}>
+          <p>{question.question}</p>
+          <p>Your answer: {userAnswers[index]}</p>
+          <p>Correct answer: {question.correctAnswer}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default Result;
+
+
+src/styles/AdminPanel.css.........................................................................................
+
+
+.admin-panel {
+  background-color: white;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  width: 100%;
+}
+
+.admin-panel h2 {
+  color: #333;
+}
+
+.admin-panel form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.admin-panel input {
+  margin: 10px 0;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.admin-panel table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-panel th,
+.admin-panel td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.admin-panel button {
+  align-self: flex-start;
+}
+
+
+/src/style/Animations.css.....................................................
+
+/* Example of CSS Animations */
+.fade-in {
+    animation: fadeIn 1s ease-out forwards;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+
+  /src/style/name.css.....................................................
+
+
+  .App {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  h1 {
+    color: #4CAF50;
+    font-size: 2.5rem;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+  }
+  
+  button:active {
+    background-color: #397d3b;
+  }
+  
+  button:focus {
+    outline: none;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  input[type="radio"] {
+    margin-right: 10px;
+  }
+  
+  label {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+  
+  label p {
+    margin-left: 10px;
+  }
+  
+  h2 {
+    color: #333;
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 600px) {
+    .container {
+      padding: 10px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+  
+    input[type="text"] {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  }
+
+
+/src/style/Quiz.css.....................................................
+  
+
+.Quiz {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+  }
+  
+  .Quiz h2 {
+    font-size: 2rem;
+    color: #4CAF50;
+  }
+  
+  .Quiz form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .Quiz form div {
+    margin-bottom: 15px;
+  }
+  
+  .Quiz form p {
+    margin: 5px 0;
+    font-size: 1.1rem;
+    color: #555;
+  }
+  
+  button[type="submit"] {
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #007B9A;
+    transform: scale(1.05);
+  }
+  
+  button[type="submit"]:active {
+    background-color: #006A86;
+  }
+  
+  button[type="submit"]:focus {
+    outline: none;
+  }
+/src/style/Result.css.....................................................
+
+
+  .result {
+  background-color: white;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+}
+
+.result h2, .result h3 {
+  color: #333;
+}
+
+.result p {
+  margin: 5px 0;
+}
+/src/style/some.css.....................................................
+
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f4f4f9;
+    color: #333;
+  }
+  
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+
+
+App.js................................................................................
+
+import React, { useState } from 'react';
+import AdminPanel from './components/AdminPanel';
+import Quiz from './components/Quiz';
+import './styles/name.css';
+// import './styles/AdminPanel.css';
+import './styles/Quiz.css';
+import './styles/Result.css';
+
+const App = () => {
+  const [quizzes, setQuizzes] = useState([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+
+  const addQuiz = (quiz) => {
+    setQuizzes([...quizzes, quiz]);
+  };
+
+  const selectQuiz = (quiz) => {
+    setSelectedQuiz(quiz);
+  };
+
+  const saveProgress = (quizTitle, answers) => {
+    localStorage.setItem(quizTitle, JSON.stringify(answers));
+  };
+
+  const loadProgress = (quizTitle) => {
+    return JSON.parse(localStorage.getItem(quizTitle));
+  };
+
+  const submitQuiz = (score, questions) => {
+    console.log(`User scored: ${score}`);
+  };
+
+  return (
+    <div className="App">
+      <h1>Online Quiz Platform</h1>
+      {!selectedQuiz ? (
+        <>
+          <AdminPanel addQuiz={addQuiz} />
+          <h2>Available Quizzes</h2>
+          {quizzes.map((quiz, index) => (
+            <button key={index} onClick={() => selectQuiz(quiz)}>{quiz.title}</button>
+          ))}
+        </>
+      ) : (
+        <Quiz
+          quiz={selectedQuiz}
+          saveProgress={saveProgress}
+          loadProgress={loadProgress}
+          submitQuiz={submitQuiz}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;
+
+index.js.........................................................
+
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './styles/some.css';
+import './styles/name.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+reportWebVitals();
+
+  
+
+

@@ -1,0 +1,422 @@
+newsApp.js...................................................
+
+import axios from 'axios';
+
+const BASE_URL = 'https://jsonplaceholder.typicode.com';
+
+// Dummy categories
+const categories = ['Business', 'Technology', 'Entertainment'];
+
+export const fetchArticles = async (page) => {
+  const response = await axios.get(`${BASE_URL}/posts?_page=${page}&_limit=10`);
+  return response.data.map(article => ({
+    ...article,
+    category: categories[Math.floor(Math.random() * categories.length)], // Assign random category
+    urlToImage: `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREoRGyXmHy_6aIgXYqWHdOT3KjfmnuSyxypw&s?text=Article+${article.id}` // Assign unique placeholder image URL
+  }));
+};
+
+
+components/ArticleCard.js...................................................................................
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const ArticleCard = ({ article }) => (
+  <div className="article-card">
+    <img src={article.urlToImage} alt={article.title} />
+    <h2>{article.title}</h2>
+    <p>{article.body}</p>
+    <Link to={`/article/${article.id}`}>Read More</Link>
+  </div>
+);
+
+export default ArticleCard;
+
+
+components/ArticleList.js..............................................................................
+
+import React from 'react';
+import ArticleCard from './ArticleCard';
+
+const ArticleList = ({ articles }) => (
+  <div className="article-list">
+    {articles.map(article => (
+      <ArticleCard key={article.url} article={article} />
+    ))}
+  </div>
+);
+
+export default ArticleList;
+
+
+components/CategoryFilter.js..............................................................................
+
+import React from 'react';
+
+const categories = ['All', 'Business', 'Technology', 'Entertainment'];
+
+const CategoryFilter = ({ selectedCategory, onSelectCategory }) => (
+  <div className="category-filter">
+    {categories.map(category => (
+      <button
+        key={category}
+        className={selectedCategory === category ? 'active' : ''}
+        onClick={() => onSelectCategory(category)}
+      >
+        {category}
+      </button>
+    ))}
+  </div>
+);
+
+export default CategoryFilter;
+
+
+
+components/Pagination.js..............................................................................
+
+import React from 'react';
+
+const Pagination = ({ currentPage, totalPages, onPageChange }) => (
+  <div className="pagination">
+    <button
+      onClick={() => onPageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+    >
+      Previous
+    </button>
+    <span>Page {currentPage} of {totalPages}</span>
+    <button
+      onClick={() => onPageChange(currentPage + 1)}
+      disabled={currentPage === totalPages}
+    >
+      Next
+    </button>
+  </div>
+);
+
+export default Pagination;
+
+src/pages/ArticlePage.js..................................................................................
+
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+
+const ArticlePage = () => {
+  const { id } = useParams();
+  const [article, setArticle] = useState(null);
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      const response = await axios.get(`https://jsonplaceholder.typicode.com/posts/${id}`);
+      setArticle({
+        ...response.data,
+        urlToImage: `https://via.placeholder.com/300x400?text=Article+${id}`
+      });
+    };
+    fetchArticle();
+  }, [id]);
+
+  if (!article) return <div>Loading...</div>;
+
+  return (
+    <div className="article-page">
+      <h1>{article.title}</h1>
+      <img src={article.urlToImage} alt={article.title} />
+      <p>{article.body}</p>
+    </div>
+  );
+};
+
+export default ArticlePage;
+
+
+
+src/pages/HomePage.js..................................................................................
+
+
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getArticles } from '../redux/articlesSlice';
+import ArticleList from '../components/ArticleList';
+import CategoryFilter from '../components/CategoryFilter';
+import Pagination from '../components/Pagination';
+
+const HomePage = () => {
+  const dispatch = useDispatch();
+  const { articles, status } = useSelector(state => state.articles);
+  const [category, setCategory] = useState('All');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    dispatch(getArticles({ category, page }));
+  }, [dispatch, category, page]);
+
+  return (
+    <div className="homepage">
+      <CategoryFilter
+        selectedCategory={category}
+        onSelectCategory={setCategory}
+      />
+      {status === 'loading' ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <ArticleList articles={articles} />
+          <Pagination
+            currentPage={page}
+            totalPages={5}  // Assume 10 pages for simplicity
+            onPageChange={setPage}
+          />
+        </>
+      )}
+    </div>
+  );
+};
+
+export default HomePage;
+
+
+
+src/redux/articlesSlice.js..................................................................................
+
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchArticles } from '../api/newsAPI';
+
+export const getArticles = createAsyncThunk(
+  'articles/getArticles',
+  async ({ category, page }) => {
+    const articles = await fetchArticles(page);
+    return articles.filter(article => category === 'All' || article.category === category);
+  }
+);
+
+const articlesSlice = createSlice({
+  name: 'articles',
+  initialState: {
+    articles: [],
+    status: null,
+    error: null,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(getArticles.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getArticles.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.articles = action.payload;
+      })
+      .addCase(getArticles.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
+  },
+});
+
+export default articlesSlice.reducer;
+
+
+src/redux/store.js..................................................................................
+
+
+import { configureStore } from '@reduxjs/toolkit';
+import articlesReducer from './articlesSlice';
+
+export const store = configureStore({
+  reducer: {
+    articles: articlesReducer,
+  },
+});
+
+src/App.js..............................................................................
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ArticlePage from './pages/ArticlePage';
+
+const App = () => (
+  <Router>
+    <div className="app">
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/article/:id" element={<ArticlePage />} />
+      </Routes>
+    </div>
+  </Router>
+);
+
+export default App;
+
+
+src/index.css............................................................
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.article-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.article-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px 10px 0 0;
+}
+
+.article-card h2 {
+  font-size: 1.5em;
+  margin: 10px 0;
+}
+
+.article-card p {
+  font-size: 1em;
+  color: #666;
+}
+
+.article-card a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.article-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.category-filter {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.category-filter button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.category-filter button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.category-filter button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.pagination button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination button:disabled {
+  background-color: #eee;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #007bff;
+  color: white;
+}
+
+.article-page {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.article-page img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.article-page h1 {
+  font-size: 2em;
+  margin: 10px 0;
+}
+
+.article-page p {
+  font-size: 1.2em;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .article-card {
+    margin: 10px 5px;
+    padding: 10px;
+  }
+
+  .category-filter {
+    flex-wrap: wrap;
+  }
+
+  .pagination {
+    flex-direction: column;
+  }
+
+  .pagination button {
+    margin: 5px 0;
+  }
+}
+
+
+src/index.js..........................................................................
+
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+import App from './App';
+import './index.css';
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+);
+
+
+

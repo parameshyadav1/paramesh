@@ -32,3 +32,294 @@ const TaskInput = () => {
 };
 
 export default TaskInput;
+
+
+src/components/TaskItem.js......................
+
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { deleteTask, toggleTask, editTask } from '../redux/actions';
+import { Button, Checkbox, TextField } from '@mui/material';
+import { motion } from 'framer-motion';
+
+const TaskItem = ({ task }) => {
+  const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const [newText, setNewText] = useState(task.text);
+
+  const handleEdit = () => {
+    if (isEditing) {
+      dispatch(editTask(task.id, newText));
+    }
+    setIsEditing(!isEditing);
+  };
+
+  return (
+    <motion.div
+      className="task-item"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+    >
+      <Checkbox
+        checked={task.completed}
+        onChange={() => dispatch(toggleTask(task.id))}
+      />
+      {isEditing ? (
+        <TextField
+          value={newText}
+          onChange={(e) => setNewText(e.target.value)}
+        />
+      ) : (
+        <span className={task.completed ? 'completed' : ''}>
+          {task.text}
+        </span>
+      )}
+      <div className="task-actions">
+        <Button onClick={handleEdit}>
+          {isEditing ? 'Save' : 'Edit'}
+        </Button>
+        <Button onClick={() => dispatch(deleteTask(task.id))} color="secondary">
+          Delete
+        </Button>
+      </div>
+    </motion.div>
+  );
+};
+
+export default TaskItem;
+
+src/components/TaskList.js................................
+
+import React from 'react';
+import { useSelector } from 'react-redux';
+import TaskItem from './TaskItem';
+import { AnimatePresence } from 'framer-motion';
+
+const TaskList = () => {
+  const tasks = useSelector((state) => state.tasks);
+
+  return (
+    <AnimatePresence>
+      {tasks.map((task) => (
+        <TaskItem key={task.id} task={task} />
+      ))}
+    </AnimatePresence>
+  );
+};
+
+export default TaskList;
+
+
+
+src/redux/actions.js................................
+
+let nextTaskId = 0;
+
+export const addTask = (text) => ({
+  type: 'ADD_TASK',
+  payload: {
+    id: nextTaskId++,
+    text,
+  },
+});
+
+export const deleteTask = (id) => ({
+  type: 'DELETE_TASK',
+  payload: id,
+});
+
+export const toggleTask = (id) => ({
+  type: 'TOGGLE_TASK',
+  payload: id,
+});
+
+export const editTask = (id, newText) => ({
+  type: 'EDIT_TASK',
+  payload: { id, newText },
+});
+
+
+src/redux/reducers.js................................
+
+const initialState = {
+    tasks: [],
+  };
+  
+  const taskReducer = (state = initialState, action) => {
+    switch (action.type) {
+      case 'ADD_TASK':
+        return {
+          ...state,
+          tasks: [
+            ...state.tasks,
+            { id: action.payload.id, text: action.payload.text, completed: false },
+          ],
+        };
+      case 'DELETE_TASK':
+        return {
+          ...state,
+          tasks: state.tasks.filter((task) => task.id !== action.payload),
+        };
+      case 'TOGGLE_TASK':
+        return {
+          ...state,
+          tasks: state.tasks.map((task) =>
+            task.id === action.payload ? { ...task, completed: !task.completed } : task
+          ),
+        };
+      case 'EDIT_TASK':
+        return {
+          ...state,
+          tasks: state.tasks.map((task) =>
+            task.id === action.payload.id ? { ...task, text: action.payload.newText } : task
+          ),
+        };
+      default:
+        return state;
+    }
+  };
+  
+  export default taskReducer;
+  
+
+
+src/redux/store.js..................................
+
+import { createStore } from 'redux';
+import taskReducer from './reducers';
+
+const loadState = () => {
+  try {
+    const serializedState = localStorage.getItem('tasks');
+    if (serializedState === null) {
+      return undefined;
+    }
+    return JSON.parse(serializedState);
+  } catch (err) {
+    return undefined;
+  }
+};
+
+const saveState = (state) => {
+  try {
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem('tasks', serializedState);
+  } catch (err) {
+    // Ignore write errors
+  }
+};
+
+const persistedState = loadState();
+
+const store = createStore(
+  taskReducer,
+  persistedState
+);
+
+store.subscribe(() => {
+  saveState({
+    tasks: store.getState().tasks,
+  });
+});
+
+export default store;
+
+src/App.js...........................
+
+import React from 'react';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import TaskInput from './components/TaskInput';
+import TaskList from './components/TaskList';
+import { Container } from '@mui/material';
+import './index.css';
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <Container className="container">
+        <h1>To-Do List</h1>
+        <TaskInput />
+        <TaskList />
+      </Container>
+    </Provider>
+  );
+};
+
+export default App;
+
+
+src/index.css...........................
+
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s;
+}
+
+.task-item:hover {
+  background-color: #f9f9f9;
+}
+
+.task-item span {
+  flex-grow: 1;
+  margin-left: 10px;
+  transition: text-decoration 0.3s;
+}
+
+.task-item span.completed {
+  text-decoration: line-through;
+}
+
+.task-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-task {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+
+
+src.index.js.................
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import './index.css';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+
+

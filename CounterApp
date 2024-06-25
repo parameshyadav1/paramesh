@@ -1,0 +1,99 @@
+import React, { useReducer } from 'react';
+import { Button, Box, LinearProgress, Typography } from '@mui/material';
+
+const initialState = {
+  count: 0,
+  past: [],
+  future: [],
+};
+
+const reducer = (state, action) => {
+  const { count, past, future } = state;
+
+  switch (action.type) {
+    case 'INCREMENT':
+      if (count >= 150) return state;
+      return {
+        count: count + 1,
+        past: [...past, count],
+        future: [],
+      };
+    case 'DECREMENT':
+      if (count <= 0) return state;
+      return {
+        count: count - 1,
+        past: [...past, count],
+        future: [],
+      };
+    case 'UNDO':
+      if (past.length === 0) return state;
+      const previous = past[past.length - 1];
+      return {
+        count: previous,
+        past: past.slice(0, past.length - 1),
+        future: [count, ...future],
+      };
+    case 'REDO':
+      if (future.length === 0) return state;
+      const next = future[0];
+      return {
+        count: next,
+        past: [...past, count],
+        future: future.slice(1),
+      };
+    default:
+      return state;
+  }
+};
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <Box sx={{ width: '50%', margin: 'auto', textAlign: 'center', mt: 5 }}>
+      <Typography variant="h4" gutterBottom>
+        Counter: {state.count}
+      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => dispatch({ type: 'DECREMENT' })}
+          sx={{ mr: 2 }}
+        >
+          Subtract 1
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => dispatch({ type: 'INCREMENT' })}
+          sx={{ mr: 2 }}
+        >
+          Add 1
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => dispatch({ type: 'UNDO' })}
+          sx={{ mr: 2 }}
+        >
+          Undo
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => dispatch({ type: 'REDO' })}
+        >
+          Redo
+        </Button>
+      </Box>
+      <LinearProgress
+        variant="determinate"
+        value={(state.count / 150) * 100}
+        sx={{ height: '20px', borderRadius: '5px', transition: 'all 0.5s ease-in-out' }}
+      />
+    </Box>
+  );
+}
+
+export default App;

@@ -1,0 +1,66 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+
+const App = () => {
+  const [quote, setQuote] = useState('');
+  const [savedQuotes, setSavedQuotes] = useState([]);
+
+  const fetchQuote = async () => {
+    try {
+      const response = await axios.get('https://ron-swanson-quotes.herokuapp.com/v2/quotes');
+      setQuote(response.data[0]); // assuming response.data is an array with a single quote
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+    }
+  };
+
+  const saveQuote = () => {
+    if (quote && !savedQuotes.includes(quote)) {
+      setSavedQuotes([...savedQuotes, quote]);
+    }
+  };
+
+  return (
+    <div className="App container">
+      <div className="row justify-content-center mt-5">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">Random Ron Swanson Quote</h5>
+              <p className="card-text">{quote}</p>
+              <button className="btn btn-primary mr-2" onClick={fetchQuote}>Get Quote</button>
+              <button className="btn btn-success" onClick={saveQuote}>Save Quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row justify-content-center mt-4">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">Saved Quotes</h5>
+              <ul className="list-group">
+                {savedQuotes.map((savedQuote, index) => (
+                  <li key={index} className="list-group-item">{savedQuote}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
+
+
+App.css.............................
+
+.App {
+  padding: 20px;
+}

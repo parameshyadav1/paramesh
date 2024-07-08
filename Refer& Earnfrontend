@@ -1,0 +1,186 @@
+Refer-and-Earn/src/components/ReferralForm.js.....
+
+
+
+import React from 'react';
+import { TextField, Button, Typography } from '@mui/material';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
+
+const validationSchema = Yup.object().shape({
+    yourName: Yup.string().required('Required'),
+    yourEmail: Yup.string().email('Invalid email').required('Required'),
+    friendsName: Yup.string().required('Required'),
+    friendsEmail: Yup.string().email('Invalid email').required('Required'),
+});
+
+const ReferralForm = ({ handleClose }) => {
+    return (
+        <div>
+            <Typography variant="h6" component="h2">
+                Referral Form
+            </Typography>
+            <Formik
+                initialValues={{
+                    yourName: '',
+                    yourEmail: '',
+                    friendsName: '',
+                    friendsEmail: '',
+                }}
+                validationSchema={validationSchema}
+                onSubmit={(values, { setSubmitting }) => {
+                    axios.post('http://localhost:3306/api', values)
+                        .then(response => {
+                            console.log('Referral submitted', response.data);
+                            handleClose();
+                            setSubmitting(false);
+                        })
+                        .catch(error => {
+                            console.error('There was an error submitting the referral!', error);
+                            setSubmitting(false);
+                        });
+                }}
+            >
+                {({ errors, touched, isSubmitting }) => (
+                    <Form>
+                        <Field
+                            as={TextField}
+                            name="yourName"
+                            label="Your Name"
+                            fullWidth
+                            margin="normal"
+                            error={touched.yourName && Boolean(errors.yourName)}
+                            helperText={touched.yourName && errors.yourName}
+                        />
+                        <Field
+                            as={TextField}
+                            name="yourEmail"
+                            label="Your Email"
+                            fullWidth
+                            margin="normal"
+                            error={touched.yourEmail && Boolean(errors.yourEmail)}
+                            helperText={touched.yourEmail && errors.yourEmail}
+                        />
+                        <Field
+                            as={TextField}
+                            name="friendsName"
+                            label="Friend's Name"
+                            fullWidth
+                            margin="normal"
+                            error={touched.friendsName && Boolean(errors.friendsName)}
+                            helperText={touched.friendsName && errors.friendsName}
+                        />
+                        <Field
+                            as={TextField}
+                            name="friendsEmail"
+                            label="Friend's Email"
+                            fullWidth
+                            margin="normal"
+                            error={touched.friendsEmail && Boolean(errors.friendsEmail)}
+                            helperText={touched.friendsEmail && errors.friendsEmail}
+                        />
+                        <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
+                            Submit
+                        </Button>
+                    </Form>
+                )}
+            </Formik>
+        </div>
+    );
+};
+
+export default ReferralForm;
+
+
+
+Refer-and-Earn/src/components/ReferAndEarn.js.....
+
+import React, { useState } from 'react';
+import { Container, Button, Typography, Box, Modal } from '@mui/material';
+import ReferralForm from './ReferralForm';
+
+const ReferAndEarn = () => {
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    return (
+        <Container>
+            <Box sx={{ textAlign: 'center', padding: '50px' }}>
+                <Typography variant="h3" gutterBottom>
+                    Refer & Earn
+                </Typography>
+                <Button variant="contained" color="primary" onClick={handleOpen}>
+                    Refer Now
+                </Button>
+                <Modal open={open} onClose={handleClose}>
+                    <Box sx={{
+                        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                        width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4
+                    }}>
+                        <ReferralForm handleClose={handleClose} />
+                    </Box>
+                </Modal>
+            </Box>
+        </Container>
+    );
+};
+
+export default ReferAndEarn;
+
+
+
+
+Refer-and-Earn/src//api.js.....
+
+import axios from 'axios';
+
+const API_URL = 'http://localhost:3306/api';
+
+export const submitReferral = (referralData) => {
+    return axios.post(`${API_URL}/referrals`, referralData);
+};
+
+
+
+src/App.js.....................
+
+
+
+import React from 'react';
+import { Container } from '@mui/material';
+import ReferAndEarn from './components/ReferAndEarn';
+
+const App = () => {
+    return (
+        <Container>
+            <ReferAndEarn />
+        </Container>
+    );
+};
+
+export default App;
+
+
+src/index.js............................
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+
+
+
+
+
+
+

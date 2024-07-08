@@ -1,0 +1,179 @@
+refer-and-earn/prisma........
+
+datasource db {
+  provider = "mysql"
+  url      = env("jdbc:mysql://localhost:5001/backend")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Referral {
+  id           Int      @id @default(autoincrement())
+  yourName     String
+  yourEmail    String
+  friendsName  String
+  friendsEmail String
+  createdAt    DateTime @default(now())
+}
+
+
+refer-and-earn/src/controllers/createReferral.js...................
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const { sendReferralEmail } = require('../services/emailService');
+ 
+
+const createReferral = async (req, res) => {
+    const { yourName, yourEmail, friendsName, friendsEmail } = req.body;
+
+    if (!yourName || !yourEmail || !friendsName || !friendsEmail) {
+        return res.status(400).send({ error: 'All fields are required' });
+    }
+
+    try {
+        const referral = await prisma.referral.create({
+            data: {
+                yourName,
+                yourEmail,
+                friendsName,
+                friendsEmail,
+            },
+        });
+
+        await sendReferralEmail(yourName, friendsName, friendsEmail);
+
+        res.status(200).send(referral);
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to save referral' });
+    }
+};
+
+module.exports = {
+    createReferral,
+};
+
+
+
+refer-and-earn/src/routes/referralRoutes.js...................
+
+const express = require('express');
+const { createReferral } = require('../controllers/referralController');
+const router = express.Router();
+
+// Define POST route
+router.post('/referrals', createReferral);
+
+module.exports = router;
+
+
+
+refer-and-earn/src/service/emailService.js...................
+
+const nodemailer = require('nodemailer');
+
+const sendReferralEmail = async (yourName, friendsName, friendsEmail) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD,
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL,
+        to: friendsEmail,
+        subject: 'Course Referral',
+        text: `Hi ${friendsName},\n\n${yourName} has referred you to a course!\n\nBest,\nRefer & Earn Team`,
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+module.exports = {
+    sendReferralEmail,
+};
+
+
+src/app.js.........................
+
+
+const bodyParser = require('body-parser');
+const referralRoutes = require('./routes/referralRoutes');
+require('dotenv').config();
+
+const app = express();
+app.use(bodyParser.json());
+app.use('/api', referralRoutes); // Mount referralRoutes under /api
+
+module.exports = app;
+
+src/server.js.......................
+
+
+
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+// Enable CORS for all origins (*), or configure it based on your needs
+app.use(cors());
+
+// Other middleware and routes setup
+
+const corsOptions = {
+    origin: 'http://localhost:3306', // Allow only this origin to access
+    methods: ['GET', 'POST'],        // Allow only specified methods
+    allowedHeaders: ['Content-Type'], // Allow only specified headers
+  };
+  
+  app.use(cors(corsOptions));
+  
+
+
+
+
+
+
+app.post('/api/referral', (req, res) => {
+    // Handle referral submission
+    // Respond with CORS headers
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5001');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    // Send response
+    res.status(200).json({ message: 'Referral submitted successfully' });
+  });
+
+
+
+src/setupProxy.js.....................
+
+
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function(app) {
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: 'http://localhost:5001',  // Your backend server address
+      changeOrigin: true,
+    })
+  );
+};
+
+
+src/.env.........................
+
+DATABASE_URL=jdbc:mysql://localhost:3306/backend
+EMAIL=parameshkummara143@gmail.com
+PASSWORD=Paramesh123@
+PORT=5001
+
+
+
+

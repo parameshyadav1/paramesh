@@ -1,0 +1,158 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Submit your details</h1>
+    <form id="submissionForm" method="POST" action="/submit">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+
+
+
+/* public/styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: auto;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+
+
+// src/app.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
+const path = require('path');
+const routes = require('./routes');
+
+const app = express();
+
+// Firebase setup
+const serviceAccount = require('../firebase-key.json');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// Serve static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Routes
+app.use('/', routes(db));
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+
+
+// src/routes.js
+const express = require('express');
+const admin = require('firebase-admin');
+
+const routes = (db) => {
+    const router = express.Router();
+
+    // Serve the HTML form
+    router.get('/', (req, res) => {
+        res.sendFile('index.html', { root: 'public' });
+    });
+
+    // Handle form submission
+    router.post('/submit', async (req, res) => {
+        const { name, email, message } = req.body;
+
+        if (!name || !email || !message) {
+            return res.status(400).send('All fields are required');
+        }
+
+        try {
+            await db.collection('submissions').add({
+                name,
+                email,
+                message,
+                timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
+            res.status(200).send('Submission successful');
+        } catch (error) {
+            res.status(500).send('Error saving data: ' + error.message);
+        }
+    });
+
+    return router;
+};
+
+module.exports = routes;
+
+
+
+
+
+
+
+
+
+
+

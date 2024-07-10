@@ -1,0 +1,231 @@
+src/components/ListXard.js...........................
+
+import React from 'react';
+
+const ListCard = ({ items, title }) => (
+  <div>
+    <h3>{title}</h3>
+    {items.map((item, index) => (
+      <div key={index}>
+        <h4>{item.title}</h4>
+        <p>{item.description}</p>
+      </div>
+    ))}
+  </div>
+);
+
+export default ListCard;
+
+
+src/components/LoginModal.js...........................
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
+
+const LoginModal = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/candidate/home');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <input 
+        type="email" 
+        value={email} 
+        onChange={(e) => setEmail(e.target.value)} 
+        placeholder="Email" 
+      />
+      <input 
+        type="password" 
+        value={password} 
+        onChange={(e) => setPassword(e.target.value)} 
+        placeholder="Password" 
+      />
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+};
+
+export default LoginModal;
+
+
+src/components/SearchComponent.js...........................
+
+
+import React, { useState } from 'react';
+
+const SearchComponent = ({ onSearch }) => {
+  const [query, setQuery] = useState('');
+
+  const handleSearch = () => {
+    onSearch(query);
+  };
+
+  return (
+    <div>
+      <input 
+        type="text" 
+        value={query} 
+        onChange={(e) => setQuery(e.target.value)} 
+        placeholder="Search by name or industry" 
+      />
+      <button onClick={handleSearch}>Search</button>
+    </div>
+  );
+};
+
+export default SearchComponent;
+
+
+src/pages/CandidateHomePage.js...............................
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import SearchComponent from '../components/SearchComponent';
+import ListCard from '../components/ListCard';
+import axios from 'axios';
+
+const CandidateHomePage = () => {
+  const [referrals, setReferrals] = useState([]);
+  const [services, setServices] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      if (!user) {
+        navigate('/login');
+      }
+    });
+
+    const fetchData = async () => {
+      const referralsData = await axios.get('https://any-api.com/clever_com/clever_com/docs/API_Description/referrals');
+      const servicesData = await axios.get('https://any-api.com/clever_com/clever_com/docs/API_Description/services');
+      setReferrals(referralsData.data);
+      setServices(servicesData.data);
+    };
+
+    fetchData();
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    signOut(auth);
+    navigate('/login');
+  };
+
+  const handleSearch = (query) => {
+    console.log('Searching for:', query);
+  };
+
+  return (
+    <div>
+      <SearchComponent onSearch={handleSearch} />
+      <button onClick={handleLogout}>Logout</button>
+      <ListCard items={referrals} title="Referrals" />
+      <ListCard items={services} title="Services" />
+    </div>
+  );
+};
+
+export default CandidateHomePage;
+
+
+
+src/pages/IndexPage.js............................................
+
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import SearchComponent from '../components/SearchComponent';
+
+const IndexPage = () => {
+  const handleSearch = (query) => {
+    console.log('Searching for:', query);
+  };
+
+  return (
+    <div>
+      <SearchComponent onSearch={handleSearch} />
+      <Link to="/login">Login</Link>
+    </div>
+  );
+};
+
+export default IndexPage;
+
+
+
+src/pages/LoginPage.js............................................
+
+import React from 'react';
+import LoginModal from '../components/LoginModal';
+
+const LoginPage = () => (
+  <div>
+    <LoginModal />
+  </div>
+);
+
+export default LoginPage;
+
+
+src/App.js...................................................
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import IndexPage from './pages/IndexPage';
+import LoginPage from './pages/LoginPage';
+import CandidateHomePage from './pages/CandidateHomePage';
+
+const App = () => (
+  <Router>
+    <Routes>
+      <Route path="/" element={<IndexPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/candidate/home" element={<CandidateHomePage />} />
+    </Routes>
+  </Router>
+);
+
+export default App;
+
+src/firebase.js............................................
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDfiQXS_lW91v8hc3TREL15BUH92RB2Wbg",
+    authDomain: "workoproject-e4da9.firebaseapp.com",
+    projectId: "workoproject-e4da9",
+    storageBucket: "workoproject-e4da9.appspot.com",
+    messagingSenderId: "534418657484",
+    appId: "1:534418657484:web:e0e02d1abd2017b46eb269",
+    measurementId: "G-BPJYN5Z9KX"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+export { app, auth };
+
+

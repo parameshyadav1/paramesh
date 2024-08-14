@@ -1,0 +1,38 @@
+/* App.css */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.resizable-box {
+  border: 1px solid #007bff;
+  background-color: #f8f9fa;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+button {
+  display: flex;
+  align-items: center;
+}
+
+.d-flex {
+  display: flex;
+}
